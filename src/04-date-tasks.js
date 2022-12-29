@@ -19,8 +19,8 @@
  *    'Tue, 26 Jan 2016 13:48:02 GMT' => Date()
  *    'Sun, 17 May 1998 03:00:00 GMT+01' => Date()
  */
-function parseDataFromRfc2822(/* value */) {
-  throw new Error('Not implemented');
+function parseDataFromRfc2822(value) {
+  return new Date(value);
 }
 
 /**
@@ -34,8 +34,8 @@ function parseDataFromRfc2822(/* value */) {
  *    '2016-01-19T16:07:37+00:00'    => Date()
  *    '2016-01-19T08:07:37Z' => Date()
  */
-function parseDataFromIso8601(/* value */) {
-  throw new Error('Not implemented');
+function parseDataFromIso8601(value) {
+  return new Date(Date.parse(value));
 }
 
 
@@ -53,8 +53,16 @@ function parseDataFromIso8601(/* value */) {
  *    Date(2012,1,1)    => true
  *    Date(2015,1,1)    => false
  */
-function isLeapYear(/* date */) {
-  throw new Error('Not implemented');
+function isLeapYear(date) {
+  const year = date.getFullYear();
+  // if (year is not divisible by 4) then it is a common year)
+  if (year % 4 !== 0) return false;
+  // else if (year is not divisible by 100) then (it is a leap year)
+  if (year % 100 !== 0) return true;
+  // else if (year is not divisible by 400) then (it is a common year)
+  if (year % 400 !== 0) return false;
+  // else (it is a leap year)
+  return true;
 }
 
 
@@ -73,8 +81,10 @@ function isLeapYear(/* date */) {
  *    Date(2000,1,1,10,0,0),  Date(2000,1,1,10,0,0,250)     => "00:00:00.250"
  *    Date(2000,1,1,10,0,0),  Date(2000,1,1,15,20,10,453)   => "05:20:10.453"
  */
-function timeSpanToString(/* startDate, endDate */) {
-  throw new Error('Not implemented');
+function timeSpanToString(startDate, endDate) {
+  const milliseconds = endDate - startDate;
+  const date = new Date(milliseconds);
+  return date.toISOString().split('T')[1].slice(0, -1);
 }
 
 
@@ -94,8 +104,24 @@ function timeSpanToString(/* startDate, endDate */) {
  *    Date.UTC(2016,3,5,18, 0) => Math.PI
  *    Date.UTC(2016,3,5,21, 0) => Math.PI/2
  */
-function angleBetweenClockHands(/* date */) {
-  throw new Error('Not implemented');
+function angleBetweenClockHands(date) {
+  const dateObj = new Date(date); // from milliseconds (epoch timestamp)
+  const hours = dateObj.getUTCHours() % 12 || 12;
+  const minutes = dateObj.getUTCMinutes();
+  const radians = (degrees) => degrees * (Math.PI / 180);
+
+  const hourDegrees = 360 / 12;
+  const minuteDegrees = 360 / 60;
+
+  const getHourHandleDegrees = (hrs, mins) => (hourDegrees * hrs) + (hourDegrees * mins * (1 / 60));
+  const getMinuteHandleDegrees = (mins) => mins * minuteDegrees;
+  const hourHandleDegrees = getHourHandleDegrees(hours, minutes);
+  const minuteHandleDegrees = getMinuteHandleDegrees(minutes);
+
+  let angle = Math.abs(hourHandleDegrees - minuteHandleDegrees);
+  angle = (360 - angle) < angle ? 360 - angle : angle;
+
+  return radians(angle);
 }
 
 
