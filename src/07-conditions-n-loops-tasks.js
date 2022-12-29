@@ -461,8 +461,46 @@ function toNaryString(num, n) {
  *   ['/web/assets/style.css', '/.bin/mocha',  '/read.me'] => '/'
  *   ['/web/favicon.ico', '/web-scripts/dump', '/verbalizer/logs'] => '/'
  */
-function getCommonDirectoryPath(/* pathes */) {
-  throw new Error('Not implemented');
+
+function getCommonDirectoryPath(pathes) {
+  const arrLength = pathes.length;
+  const firstPath = pathes[0];
+  const firstPathSegmented = firstPath.split('/');
+  const firstPathSegmentedLength = firstPathSegmented.length;
+  let result = [];
+
+  for (let s = 0; s < firstPathSegmentedLength; s += 1) {
+    const isSameSegmentArr = [];
+
+    for (let p = 1; p < arrLength; p += 1) {
+      const segments = pathes[p].split('/');
+      isSameSegmentArr.push(segments[s] === firstPathSegmented[s]);
+    }
+
+    if (isSameSegmentArr.every((x) => x === true)) {
+      result.push(firstPathSegmented[s]);
+    } else {
+      break;
+    }
+  }
+
+  result = result.join('/');
+
+  if (!result.length) {
+    const isSameFirstCharArr = [];
+
+    for (let p = 1; p < arrLength; p += 1) {
+      isSameFirstCharArr.push(pathes[p][0] === firstPath[0]);
+    }
+
+    if (isSameFirstCharArr.every((x) => x === true)) {
+      result += firstPath[0];
+    }
+  } else if (result.length && firstPath[result.length] === '/') {
+    result += '/';
+  }
+
+  return result;
 }
 
 
@@ -484,8 +522,21 @@ function getCommonDirectoryPath(/* pathes */) {
  *                         [ 6 ]]
  *
  */
-function getMatrixProduct(/* m1, m2 */) {
-  throw new Error('Not implemented');
+function getMatrixProduct(m1, m2) {
+  // final matrix   =   num of m1 rows   x   num of m2 columns
+  return Array.from(Array(m1.length).fill([]), (row, rowIdx) => {
+    const rowArr = (Array.from(Array(m2[0].length).fill(0), (num, colIdx) => {
+      let sum = 0;
+
+      for (let m2i = 0; m2i < m2.length; m2i += 1) {
+        sum += m1[rowIdx][m2i] * m2[m2i][colIdx];
+      }
+
+      return sum;
+    }));
+
+    return rowArr;
+  });
 }
 
 
@@ -519,8 +570,72 @@ function getMatrixProduct(/* m1, m2 */) {
  *    [    ,   ,    ]]
  *
  */
-function evaluateTicTacToePosition(/* position */) {
-  throw new Error('Not implemented');
+function evaluateTicTacToePosition(position) {
+  const boardLength = position.length;
+  const board = [];
+
+  for (let r = 0; r < boardLength; r += 1) {
+    const row = [];
+
+    for (let c = 0; c < boardLength; c += 1) {
+      const el = position[r][c];
+      if (el) row.push(el);
+      else row.push(undefined);
+    }
+
+    board.push(row);
+  }
+
+  let winner;
+
+  // check rows
+  for (let i = 0; i < boardLength; i += 1) {
+    const rowSet = new Set(board[i]);
+    if (rowSet.size === 1 && [...rowSet][0] !== undefined) {
+      [winner] = [...rowSet]; return winner;
+    }
+  }
+
+  // check columns
+  const rowLength = board[0].length;
+
+  for (let c = 0; c < rowLength; c += 1) {
+    const colSet = new Set();
+
+    for (let r = 0; r < boardLength; r += 1) {
+      const el = board[r][c];
+      colSet.add(el);
+    }
+
+    if (colSet.size === 1 && [...colSet][0] !== undefined) {
+      [winner] = [...colSet]; return winner;
+    }
+  }
+
+  // check diagonals
+  const diag1Set = new Set();
+
+  for (let r = 0, c = 0; r < boardLength; r += 1, c += 1) {
+    const el = board[r][c];
+    diag1Set.add(el);
+  }
+
+  if (diag1Set.size === 1 && [...diag1Set][0] !== undefined) {
+    [winner] = [...diag1Set]; return winner;
+  }
+
+  const diag2Set = new Set();
+
+  for (let r = 0, c = board[0].length - 1; r < boardLength && c >= 0; r += 1, c -= 1) {
+    const el = board[r][c];
+    diag2Set.add(el);
+  }
+
+  if (diag2Set.size === 1 && [...diag2Set][0] !== undefined) {
+    [winner] = [...diag2Set]; return winner;
+  }
+
+  return winner;
 }
 
 
