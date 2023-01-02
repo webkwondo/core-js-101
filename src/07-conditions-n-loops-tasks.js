@@ -322,24 +322,23 @@ function reverseInteger(num) {
  *   4916123456789012 => false
  */
 function isCreditCardNumber(ccn) {
-  let nCheck = 0;
-  let bEven = false;
+  let checkSum = 0;
+  let isEven = false;
   const ccnStr = ccn.toString();
 
   for (let i = ccnStr.length - 1; i >= 0; i -= 1) {
-    const cDigit = ccnStr.charAt(i);
-    let nDigit = parseInt(cDigit, 10);
+    let digit = parseInt(ccnStr[i], 10);
 
-    if (bEven) {
-      nDigit *= 2;
-      if (nDigit > 9) nDigit -= 9;
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
     }
 
-    nCheck += nDigit;
-    bEven = !bEven;
+    checkSum += digit;
+    isEven = !isEven;
   }
 
-  return (nCheck % 10) === 0;
+  return (checkSum % 10) === 0;
 }
 
 /**
