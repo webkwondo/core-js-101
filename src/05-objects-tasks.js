@@ -20,25 +20,26 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-class Rectangle {
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-  }
 
-  getArea() {
-    return this.width * this.height;
-  }
-}
+// class Rectangle {
+//   constructor(width, height) {
+//     this.width = width;
+//     this.height = height;
+//   }
 
-// function Rectangle(width, height) {
-//   this.width = width;
-//   this.height = height;
+//   getArea() {
+//     return this.width * this.height;
+//   }
 // }
 
-// Rectangle.prototype.getArea = function area() {
-//   return this.width * this.height;
-// };
+function Rectangle(width, height) {
+  this.width = width;
+  this.height = height;
+}
+
+Rectangle.prototype.getArea = function area() {
+  return this.width * this.height;
+};
 
 
 /**
@@ -127,35 +128,70 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
-const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
-  },
+class Builder {
+  constructor(selectorStr = '', order = null, statObj = {}) {
+    this.str = selectorStr;
+    this.order = order;
+    this.stat = statObj;
+  }
 
-  id(/* value */) {
-    throw new Error('Not implemented');
-  },
+  chain(type, selectorStr, order) {
+    this.validate(type, order);
 
-  class(/* value */) {
-    throw new Error('Not implemented');
-  },
+    const newStr = this.str + selectorStr;
+    const newStatObj = { ...this.stat };
+    if (type in newStatObj) newStatObj[type] += 1;
+    else newStatObj[type] = 1;
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
-  },
+    return new Builder(newStr, order, newStatObj);
+  }
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
-  },
+  validate(type, order) {
+    const uniqueTypes = ['element', 'id', 'pseudoElement'];
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
-  },
+    if (this.order > order) throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
-  },
-};
+    if (uniqueTypes.includes(type) && this.stat[type]) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+  }
+
+  element(value) {
+    return this.chain('element', `${value}`, 0);
+  }
+
+  id(value) {
+    return this.chain('id', `#${value}`, 1);
+  }
+
+  class(value) {
+    return this.chain('class', `.${value}`, 2);
+  }
+
+  attr(value) {
+    return this.chain('attr', `[${value}]`, 3);
+  }
+
+  pseudoClass(value) {
+    return this.chain('pseudoClass', `:${value}`, 4);
+  }
+
+  pseudoElement(value) {
+    return this.chain('pseudoElement', `::${value}`, 5);
+  }
+
+  combine(selector1, combinator, selector2) {
+    let newStr = this.str;
+    newStr = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return new Builder(newStr);
+  }
+
+  stringify() {
+    return this.str;
+  }
+}
+
+const cssSelectorBuilder = new Builder();
 
 
 module.exports = {
